@@ -80,11 +80,11 @@ WSGI_APPLICATION = 'coronamap.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'producthuntdb',
-        'USER': 'postgres',
-        'PASSWORD': 'Volgograd',
-        'HOST':'localhost',
-        'PORT': 5432
+        'NAME': 'producthunt', #producthuntdb,
+        'USER': 'antpower',  #postgres
+        'PASSWORD': 'SillySaurus1',  # Volgograd
+        'HOST':'peaceengine-1481.postgres.pythonanywhere-services.com', #localhost
+        'PORT': 11481  # 5432
     }
 }
 
