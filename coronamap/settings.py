@@ -31,8 +31,10 @@ if os.name == 'nt':
     os.environ['PATH'] = OSGEO4W + r"\bin;" + os.environ['PATH']
 
 
-GEOS_LIBRARY_PATH = r'C:\OSGeo4W\bin\geos_c.dll' 
-GDAL_LIBRARY_PATH = r'C:\OSGeo4W\bin\gdal300.dll'
+#GEOS_LIBRARY_PATH = r'C:\OSGeo4W\bin\geos_c.dll' 
+#GDAL_LIBRARY_PATH = r'C:\OSGeo4W\bin\gdal300.dll'
+GEOS_LIBRARY_PATH = '/usr/local/lib/libgeos_c.so'
+#GDAL_LIBRARY_PATH = 
 
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
