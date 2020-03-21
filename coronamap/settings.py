@@ -81,7 +81,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'producthunt', #producthuntdb,
-        'USER': 'antpower',  #postgres
+        'USER': 'super',  #postgres
         'PASSWORD': 'SillySaurus1',  # Volgograd
         'HOST':'peaceengine-1481.postgres.pythonanywhere-services.com', #localhost
         'PORT': 11481  # 5432
