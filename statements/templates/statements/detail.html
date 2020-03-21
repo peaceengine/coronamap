@@ -1,0 +1,48 @@
+{% extends 'base.html' %}   
+
+{% block content %}
+<!-- 
+<div class="row">
+    <div class="col-2">  
+        <img src="{{ product.icon.url }}" class="img-fluid" />
+    </div>
+    <div class="col-10">       
+        <a href="{{ product.url }}"><h1>{{ product.title }}</h1></a> 
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-8">  
+        <img src="{{ product.image.url }}" class="img-fluid" />
+    </div>
+
+    <div class="col-4">
+        {% if user in products.all or user == product.hunter %}      
+            <a href="#"><button class="btn btn-primary btn-lg btn-block" disabled><ion-icon name="caret-up-outline"></ion-icon> Can't Upvote {{ product.votes_total }}</button></a>            
+        {% else %}
+            <a href="javascript:{document.getElementById('upvote_home').submit()}"><button class="btn btn-primary btn-lg btn-block"><ion-icon name="caret-up-outline"></ion-icon> Upvote {{ product.votes_total }}</button></a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-4 pt-1">  
+        <h4><ion-icon name="search-outline"></ion-icon>Created by {{ product.hunter.username }}</h4>
+    </div>
+    <div class="col-4 text-right">          
+        <h4><ion-icon name="time-outline"></ion-icon> {{ product.pub_date_pretty }}</h4>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-8 pt-1">  
+        <p>{{ product.body }}</p>
+    </div>
+</div>
+
+<form id="upvote_home" method="POST" action="{% url 'upvote_home' product.id %}">
+    {% csrf_token %}
+    <input type="hidden">
+</form> -->
+
+{% endblock %}

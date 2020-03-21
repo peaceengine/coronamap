@@ -1,0 +1,59 @@
+{% extends 'base.html' %}   
+
+{% block content %}
+
+Statements home
+<!-- 
+<form role="form" action="/" method="post">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="latitude">Latitude:</label>
+        <input id="id_latitude" name="latitude" type="text" class="form-control"></input>
+    </div>
+
+    <div class="form-group">
+        <label for="longitude">Longitude:</label>
+        <input id="id_longitude" name="longitude" type="text" class="form-control"></input>
+    </div>
+
+    <input class="btn btn-primary" type="submit" value="Submit" />
+</form>
+
+<script language="javascript" type="text/javascript">
+    navigator.geolocation.getCurrentPosition(function (position) {
+        var lat = document.getElementById('id_latitude');
+        var lon = document.getElementById('id_longitude');
+        lat.value = position.coords.latitude;
+        lon.value = position.coords.longitude;
+    });
+</script>
+
+{% for product in products.all %}
+    <div class="row pb-3">
+        <div class="col-2" onclick="window.location='{% url 'detail' product.id %}';" style="cursor: pointer;">    
+            <img src="{{ product.icon.url }}" class="img-fluid" height=30 />        
+        </div>
+        <div class="col-6" onclick="window.location='{% url 'detail' product.id %}';" style="cursor: pointer;">                
+            <h1>{{ product.title }}</h1>
+            <p>{{ product.summary }}</p>
+        </div>
+        <div class="col-4" onclick="window.location='{% url 'detail' product.id %}';" style="cursor: pointer;">    
+            {% if user in products.all or user == product.hunter %}      
+                <a href="#"><button class="btn btn-primary btn-lg btn-block" disabled><ion-icon name="caret-up-outline"></ion-icon> Can't Upvote {{ product.votes_total }}</button></a>            
+            {% else %}
+                <a href="javascript:{document.getElementById('upvote_home').submit()}"><button class="btn btn-primary btn-lg btn-block"><ion-icon name="caret-up-outline"></ion-icon> Upvote {{ product.votes_total }}</button></a>
+            {% endif %}        
+        </div>    
+    </div>
+
+    <form id="upvote_home{{ product.id }}" method="POST" action="{% url 'upvote_home' product.id %}">
+        {% csrf_token %}
+        <input type="hidden">
+    </form> -->
+
+{% endfor %}
+
+{% endblock %}
+
+<script src="https://code.jquery.com/jquery-2.2.2.min.js" integrity="sha256-36cp2Co+/62rEAAYHLmRCPIych47CvdM+uTBJwSzWjI=" crossorigin="anonymous"></script>
+<script language="javascript" type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>

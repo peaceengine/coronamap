@@ -4,6 +4,7 @@ click==7.1.1
 dj-database-url==0.5.0
 dj-static==0.0.6
 Django==3.0.4
+django-shortcuts==1.6
 django-toolbelt==0.0.1
 Flask==1.1.1
 geos==0.2.2
