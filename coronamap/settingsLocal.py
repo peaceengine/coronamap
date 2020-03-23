@@ -31,9 +31,9 @@ TEMPLATE_PATH = os.path.join(PROJECT_PATH, 'templates')
 #     os.environ['PATH'] = OSGEO4W + r"\bin;" + os.environ['PATH']
 
 
-#GEOS_LIBRARY_PATH = r'C:\OSGeo4W\bin\geos_c.dll' 
-#GDAL_LIBRARY_PATH = r'C:\OSGeo4W\bin\gdal300.dll'
-GEOS_LIBRARY_PATH = '/usr/local/lib/libgeos_c.so'
+GEOS_LIBRARY_PATH = r'C:\OSGeo4W\bin\geos_c.dll' 
+GDAL_LIBRARY_PATH = r'C:\OSGeo4W\bin\gdal300.dll'
+#GEOS_LIBRARY_PATH = '/usr/local/lib/libgeos_c.so'
 #GDAL_LIBRARY_PATH = 
 
 TEMPLATE_DIRS = (
@@ -118,16 +118,16 @@ WSGI_APPLICATION = 'coronamap.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'coronamapdb', #producthuntdb,
-        'USER': 'super',  #postgres
-        'PASSWORD': 'SillySaurus1',  # Volgograd
-        'HOST':'peaceengine-1481.postgres.pythonanywhere-services.com', #localhost
-        'PORT': 11481  # 5432
-#        'NAME': 'coronamapdb',
-#        'USER': 'postgres',
-#        'PASSWORD': 'Volgograd',
-#        'HOST':'localhost',
-#        'PORT': 5432
+    #    'NAME': 'coronamapdb', #producthuntdb,
+    #    'USER': 'super',  #postgres
+    #    'PASSWORD': 'SillySaurus1',  # Volgograd
+    #    'HOST':'peaceengine-1481.postgres.pythonanywhere-services.com', #localhost
+    #    'PORT': 11481  # 5432
+        'NAME': 'coronamapdb',
+        'USER': 'postgres',
+        'PASSWORD': 'Volgograd',
+        'HOST':'localhost',
+        'PORT': 5432
     }
 }
 
