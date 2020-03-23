@@ -1,68 +1,156 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import Statement
+from .models import Statement, Response, UserGeoLocation, Hashtag
 from django.utils import timezone
+from django.http import HttpResponse, Http404, HttpResponseRedirect
+from django.urls import reverse
+
+from django.template import loader
 
 from django.views.generic.edit import FormView
 from statements.forms import LookupForm
 #from django.shortcuts import render_to_response
 
 def home(request):
-    statements = Statement.objects.all().order_by('-votes_total') # gets all the projects out of the database
-    return render(request, 'statements/home.html', {'statements':statements})
+    # latest_statement_list = Statement.objects.order_by('-pub_date')[:5]
+    # output = ', '.join([q.statement_text for q in latest_statement_list])
+    # return HttpResponse(output)
+    # statements = Statement.objects.all().order_by('-pub_date') # gets all the projects out of the database
+    # return render(request, 'statements/home.html', {'statements':statements})
+
+    latest_statement_list = Statement.objects.all().order_by('-pub_date')[:5] # gets all the projects out of the database
+    template = loader.get_template('statements/home.html') #statements/
+    context = {'latest_statement_list':latest_statement_list,}
+    return HttpResponse(template.render(context, request))
+   # return render(request, 'statements/home.html', {'latest_statement_list':latest_statement_list}) #statements/
+
+
+#    return render(request, 'statements/home.html', {'statements':statements})
+#    output = ', '.join([q.statement_text for q in latest_statement_list])
+#    return HttpResponse(output)
 
 @login_required(login_url="/accounts/signup")
 def create(request):
     if request.method == 'POST':
-        if request.POST['title'] and request.POST['body'] and \
-            request.POST['url'] and request.FILES['image'] and request.FILES['icon']:
-            Statement = Statement()
-            Statement.title = request.POST['title']
-            Statement.body = request.POST['body']
-            if request.POST['url'].startswith('http://') or request.POST['url'].startswith('https://'):
-                Statement.url = request.POST['url']
-            else:
-                Statement.url = 'http://' + request.POST['url']
-            Statement.image = request.FILES['image']
-            Statement.icon = request.FILES['icon']            
-            Statement.pub_date = timezone.datetime.now()
-            #Statement.votes_total = 1
-            Statement.hunter = request.user
-            Statement.save() # inserts it into the database
-            return redirect('/statements/' + str(Statement.id)) # show user the Statement
+        if request.POST['statement_text']:
+            statement = Statement()
+            statement.statement_text = request.POST['statement_text']
+            statement.pub_date = timezone.datetime.now()
+            statement.creator = request.user
+            if request.FILES['icon_disagree']:
+                statement.iconDisagree = request.FILES['icon_disagree']
+            if request.FILES['icon_agree']:
+                statement.iconAgree = request.FILES['icon_agree']
+            if request.FILES['icon']:
+                statement.icon = request.FILES['icon']
+            statement.save() # inserts it into the database
+
+            return redirect('/statements/' + str(statement.id)) # show user the Statement
         else:
             return render(request, 'statements/create.html', {'error':'All fields are required.'})
     else:
         return render(request, 'statements/create.html')
 
-def detail(request, Statement_id):
-    Statement = get_object_or_404(Statement, pk=Statement_id)  #pk=primary key
-    return render(request, 'statements/detail.html', {'Statement':Statement})
+
+def detail(request, statement_id):
+    statement = get_object_or_404(Statement, pk=statement_id)  #pk=primary key
+    return render(request, 'statements/detail.html', {'statement':statement})  #statements/
+
+    # try:
+    #     statement = Statement.objects.get(pk=statement_id)
+    # except Statement.DoesNotExist:
+    #     raise Http404("Statement does not exist")
+    # return render(request, 'statements/detail.html', {'statement':statement})
+
+#    return HttpResponse("You're looking at question %s." % statement_id)
+
+# def detail(request, statement_id):
+#     statement = get_object_or_404(Statement, pk=statement_id)  #pk=primary key
+#     return render(request, 'statements/detail.html', {'statement':statement})  #statements/
+    
+
+def results(request, statement_id):
+    statement = get_object_or_404(Statement, pk=statement_id)
+    numDisagree = Response.objects.filter(statement_id=statement_id).filter(disagree=1).count()
+    numAgree = Response.objects.filter(statement_id=statement_id).filter(agree=1).count()
+    return render(request, 'statements/results.html', {'statement': statement, 'numDisagree': numDisagree, 'numAgree': numAgree})  #statements/
+
 
 @login_required(login_url="/accounts/signup")
-def upvote_home(request, Statement_id):
-    if request.method == 'POST':        
-        Statement = get_object_or_404(Statement, pk=Statement_id)
-        if request.user not in Statement.voters.all():
-            print("not in ")
-            Statement.votes_total += 1
-            Statement.voters.add(request.user)
-            Statement.save() # this save is what actually changes the database
-            return redirect('/statements/' + str(Statement.id))
-        else:
-            print("it's already in")
-           # upvote(request, Statement_id)
+def giveResponseDisagree(request, statement_id):
+    if request.method == 'POST':   
+        statement = get_object_or_404(Statement, pk=statement_id)
+        response = Response()
+        response.user = request.user
+        response.statement = statement
+        response.response_date = timezone.datetime.now()
+        response.disagree = 1
+        response.agree = 0
+        response.save()
+        # Always return an HttpResponseRedirect after successfully dealing
+        # with POST data. This prevents data from being posted twice if a
+        # user hits the Back button.
+        return HttpResponseRedirect(reverse('results', args=(statement.id,)))    
+
+    # probabyl should put in error handling here...
+    # try:
+    #     selected_choice = statement.choice_set.get(pk=request.POST['choice'])
+    # except (KeyError, Choice.DoesNotExist):
+    #     # Redisplay the question voting form.
+    #     return render(request, 'statements/detail.html', {
+    #         'statement': statement,
+    #         'error_message': "You d   idn't select a choice.",
+    #     })
+    # else:
 
 
 @login_required(login_url="/accounts/signup")
-def upvote(request, Statement_id):
-    if request.method == 'POST':
-        print("regular upvote")
-        Statement = get_object_or_404(Statement, pk=Statement_id)
-        Statement.votes_total += 1
-        Statement.voters.add(request.user)
-        Statement.save() # this save is what actually changes the database
-        return redirect('/statements/' + str(Statement.id))
+def giveResponseAgree(request, statement_id):
+    if request.method == 'POST':   
+        statement = get_object_or_404(Statement, pk=statement_id)
+        response = Response()
+        response.user = request.user
+        response.statement = statement
+        response.response_date = timezone.datetime.now()
+        response.disagree = 0
+        response.agree = 1
+        response.save()
+        # Always return an HttpResponseRedirect after successfully dealing
+        # with POST data. This prevents data from being posted twice if a
+        # user hits the Back button.
+        return HttpResponseRedirect(reverse('results', args=(statement.id,)))    
+
+
+@login_required(login_url="/accounts/signup")
+def results0(request, statement_id):
+    statement = get_object_or_404(Statement, pk=statement_id)
+
+    #Response.objects.filter(statement_id=2).filter(answer=0).count()
+
+#@login_required(login_url="/accounts/signup")
+# def upvote_home(request, statement_id):
+#     if request.method == 'POST':        
+#         statement = get_object_or_404(statement, pk=statement_id)
+#         if request.user not in statement.voters.all():
+#             print("not in ")
+#             statement.votes_total += 1
+#             statement.voters.add(request.user)
+#             statement.save() # this save is what actually changes the database
+#             return redirect('/statements/' + str(statement.id))
+#         else:
+#             print("it's already in")
+#            # upvote(request, Statement_id)
+
+
+# @login_required(login_url="/accounts/signup")
+# def upvote(request, statement_id):
+#     if request.method == 'POST':
+#         print("regular upvote")
+#         statement = get_object_or_404(statement, pk=statement_id)
+#         statement.votes_total += 1
+#         statement.voters.add(request.user)
+#         statement.save() # this save is what actually changes the database
+#         return redirect('/statements/' + str(statement.id))
 
 
 def save_user_geolocation(request):
@@ -75,6 +163,16 @@ def save_user_geolocation(request):
             longitude = longitude,
             )
         return HttpResponse('')
+
+
+# def index(request):
+#     latest_statement_list = Statement.objects.order_by('-pub_date')[:5]
+# #    template = loader.get_template('statements/home.html')
+#     context = {'latest_statement_list': latest_statement_list}
+#     return render(request, 'statements/home.html', context)
+#   #  output = ', '.join([q.statement_text for q in latest_statement_list])
+#   #  return HttpResponse(output)
+
 
 # class LookupView(FormView):
 #     form_class = LookupForm

@@ -12,22 +12,22 @@
 
 <form method="POST" action="{% url 'create' %}" enctype="multipart/form-data">
     {% csrf_token %} 
-    Title:<br/>
-    <input type="text" name="title" />
-    <br/>
-    Body:<br/>
-    <input type="textbox" name="body" />
-    <br/>
-    URL:<br/>
-    <input type="text" name="url" />
+    Statement:<br/>
+    <input type="text" name="statement_text" />
+    <br/><br/> 
+    Hashtag:<br/>
+    <input type="text" name="hashtag_text" />
     <br/>
     Icon:<br/>
     <input type="file" name="icon" />
     <br/>
-    Image:<br/>
-    <input type="file" name="image" />
+    Disagree Icon:<br/>
+    <input type="file" name="icon_disagree" />
+    <br/>
+    Agree Icon:<br/>
+    <input type="file" name="icon_agree" />
     <br/>
     <br/> 
-    <input class="btn btn-primary" type="submit" value="Add Product" />
+    <input class="btn btn-primary" type="submit" value="Add Statement" />
 </form>
 {% endblock %}

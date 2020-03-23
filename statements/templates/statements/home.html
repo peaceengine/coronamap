@@ -1,8 +1,24 @@
 {% extends 'base.html' %}   
+Statements home
 
 {% block content %}
 
+{% load static %}
+
+
 Statements home
+
+{% if latest_statement_list %}
+    <ul>
+    {% for statement in latest_statement_list %}
+        <li><a href="{% url 'detail' statement.id %}">{{ statement.statement_text }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No statements are available.</p>
+{% endif %}
+</h4>
+
 <!-- 
 <form role="form" action="/" method="post">
     {% csrf_token %}
@@ -49,11 +65,10 @@ Statements home
     <form id="upvote_home{{ product.id }}" method="POST" action="{% url 'upvote_home' product.id %}">
         {% csrf_token %}
         <input type="hidden">
-    </form> -->
+    </form> 
 
 {% endfor %}
-
+-->
 {% endblock %}
 
-<script src="https://code.jquery.com/jquery-2.2.2.min.js" integrity="sha256-36cp2Co+/62rEAAYHLmRCPIych47CvdM+uTBJwSzWjI=" crossorigin="anonymous"></script>
-<script language="javascript" type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+

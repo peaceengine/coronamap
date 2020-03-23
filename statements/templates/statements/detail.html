@@ -1,48 +1,165 @@
 {% extends 'base.html' %}   
 
 {% block content %}
-<!-- 
-<div class="row">
-    <div class="col-2">  
-        <img src="{{ product.icon.url }}" class="img-fluid" />
-    </div>
-    <div class="col-10">       
-        <a href="{{ product.url }}"><h1>{{ product.title }}</h1></a> 
-    </div>
-</div>
 
-<div class="row">
-    <div class="col-8">  
-        <img src="{{ product.image.url }}" class="img-fluid" />
-    </div>
+{% load static %}
 
-    <div class="col-4">
-        {% if user in products.all or user == product.hunter %}      
-            <a href="#"><button class="btn btn-primary btn-lg btn-block" disabled><ion-icon name="caret-up-outline"></ion-icon> Can't Upvote {{ product.votes_total }}</button></a>            
-        {% else %}
-            <a href="javascript:{document.getElementById('upvote_home').submit()}"><button class="btn btn-primary btn-lg btn-block"><ion-icon name="caret-up-outline"></ion-icon> Upvote {{ product.votes_total }}</button></a>
-        {% endif %}
-    </div>
-</div>
 
-<div class="row">
-    <div class="col-4 pt-1">  
-        <h4><ion-icon name="search-outline"></ion-icon>Created by {{ product.hunter.username }}</h4>
-    </div>
-    <div class="col-4 text-right">          
-        <h4><ion-icon name="time-outline"></ion-icon> {{ product.pub_date_pretty }}</h4>
-    </div>
-</div>
+<h1>{{ statement.statement_text }}</h1>
+<img src="{{ statement.image }}" class="img-fluid" />
 
-<div class="row">
-    <div class="col-8 pt-1">  
-        <p>{{ product.body }}</p>
-    </div>
-</div>
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
 
-<form id="upvote_home" method="POST" action="{% url 'upvote_home' product.id %}">
+<!-- <a href="javascript:{document.getElementById('respond0').submit()}"><button class="btn btn-primary btn-lg btn-block"><ion-icon name="caret-up-outline"></ion-icon> Agree</button></a> -->
+
+<form id="respondDisagree" method="POST" action="{% url 'giveResponseDisagree' statement.id %}">
     {% csrf_token %}
     <input type="hidden">
-</form> -->
+</form>
+
+<form id="respondAgree" method="POST" action="{% url 'giveResponseAgree' statement.id %}">
+    {% csrf_token %}
+    <input type="hidden">
+</form> 
+
+
+
+<link rel="stylesheet" type="text/css" href="{% static 'admin/css/swipe.css' %}">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function() {
+
+var animating = false;
+var cardsCounter = 0;
+var numOfCards = 6;
+var decisionVal = 80;
+var pullDeltaX = 0;
+var deg = 0;
+var $card, $cardReject, $cardLike;
+
+function pullChange() {
+  animating = true;
+  deg = pullDeltaX / 10;
+  $card.css("transform", "translateX("+ pullDeltaX +"px) rotate("+ deg +"deg)");
+
+  var opacity = pullDeltaX / 100;
+  var rejectOpacity = (opacity >= 0) ? 0 : Math.abs(opacity);
+  var likeOpacity = (opacity <= 0) ? 0 : opacity;
+  $cardReject.css("opacity", rejectOpacity);
+  $cardLike.css("opacity", likeOpacity);
+};
+
+function release() {
+
+  if (pullDeltaX >= decisionVal) {
+    $card.addClass("to-right");
+    document.getElementById("respondAgree").submit();
+  } else if (pullDeltaX <= -decisionVal) {
+    $card.addClass("to-left");
+    document.getElementById("respondDisagree").submit();
+  }
+
+  if (Math.abs(pullDeltaX) >= decisionVal) {
+    $card.addClass("inactive");
+
+    setTimeout(function() {
+      $card.addClass("below").removeClass("inactive to-left to-right");
+      cardsCounter++;
+      if (cardsCounter === numOfCards) {
+        cardsCounter = 0;
+        $(".demo__card").removeClass("below");
+      }
+    }, 300);
+  }
+
+  if (Math.abs(pullDeltaX) < decisionVal) {
+    $card.addClass("reset");
+  }
+
+  setTimeout(function() {
+    $card.attr("style", "").removeClass("reset")
+      .find(".demo__card__choice").attr("style", "");
+
+    pullDeltaX = 0;
+    animating = false;
+  }, 300);
+  
+};
+
+$(document).on("mousedown touchstart", ".demo__card:not(.inactive)", function(e) {
+  if (animating) return;
+
+  $card = $(this);
+  $cardReject = $(".demo__card__choice.m--reject", $card);
+  $cardLike = $(".demo__card__choice.m--like", $card);
+  var startX =  e.pageX || e.originalEvent.touches[0].pageX;
+
+  $(document).on("mousemove touchmove", function(e) {
+    var x = e.pageX || e.originalEvent.touches[0].pageX;
+    pullDeltaX = (x - startX);
+    if (!pullDeltaX) return;
+    pullChange();
+  });
+
+  $(document).on("mouseup touchend", function() {
+    $(document).off("mousemove touchmove mouseup touchend");
+    if (!pullDeltaX) return; // prevents from rapid click events
+    release();
+  });
+
+
+});
+
+});
+</script>
+
+<h4>
+
+
+
+<div class="demo">
+    <header class="demo__header"></header>
+    <div class="demo__content">
+      <div class="demo__card-cont">
+        <div class="demo__card">
+          <div class="demo__card__top brown">              
+              <style>
+                .demo__card__img {
+                    overflow: hidden;
+                    width: 10rem;
+                    height: 10rem;
+                    margin: 0 auto 1.5rem;
+                    border-radius: 50%;
+                    border: 0.5rem solid #fff;
+                    background-image: url("{{ statement.image.url }}");
+                    background-size: cover;
+                }
+                </style>
+                <img src="{{ statement.image }}" class="img-fluid" />
+                <div class="demo__card__img">
+                        <img src="{{ statement.image.url }}" class="img-fluid" />
+
+                </div>
+            <p class="demo__card__name">{{ statement.statement_text }}</p>
+          </div>
+          <div class="demo__card__btm">
+            <p class="demo__card__we"></p>
+          </div>
+          <div class="demo__card__choice m--reject"></div>
+          <div class="demo__card__choice m--like"></div>
+          <div class="demo__card__drag"></div>
+        </div>
+      </div>
+      <p class="demo__tip">Swipe left or right </p>
+    </div>
+  </div>
+
+  
+
 
 {% endblock %}
+
+
+<script src="https://code.jquery.com/jquery-2.2.2.min.js" integrity="sha256-36cp2Co+/62rEAAYHLmRCPIych47CvdM+uTBJwSzWjI=" crossorigin="anonymous"></script>
+<script language="javascript" type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>

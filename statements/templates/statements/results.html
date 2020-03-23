@@ -1,0 +1,25 @@
+{% extends 'base.html' %}   
+Statements home
+
+{% block content %}
+
+{% if error %}
+    {{ error }}
+    <br/>
+    <br/>
+{% endif %}
+
+<h1>Create</h1>
+
+
+Results for 
+{{ statement.statement_text }}
+<br/>Number of disagree responses:
+{{ numDisagree }}
+<br/>Number of agree responses:
+{{ numAgree }}
+
+<a href="{% url 'detail' statement.id %}">Vote again?</a>
+
+
+{% endblock %}
