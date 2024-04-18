@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tactical Burger Assembly</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            background-color: black;
+            color: #00ff00;
+        }
+        header {
+            background-color: #000000;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 2px solid #00ff00;
+        }
+        h1 {
+            font-size: 48px;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 10px;
+            text-shadow: 0 0 10px #00ff00;
+        }
+        #app {
+            display: flex;
+            flex: 1;
+            width: 100%;
+        }
+        #ingredientSelection, #burgerDisplay, #descriptionDisplay {
+            flex: 1;
+            overflow: auto;
+            padding: 20px;
+            border: 2px solid #00ff00;
+            margin: 10px;
+        }
+        #burgerDisplay {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .burger-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            width: 300px;
+            height: 300px;
+        }
+        .burger-item {
+            width: 100px;
+            height: 100px;
+            position: absolute;
+        }
+        .left { left: 0; }
+        .right { right: 0; }
+        .center { left: 50%; transform: translateX(-50%); }
+        .top { top: 0; }
+        .bottom { bottom: 0; }
+        .ingredient {
+            margin: 10px;
+        }
+        h2, h3 {
+            text-transform: uppercase;
+            text-align: center;
+        }
+        footer {
+            background-color: #000000;
+            padding: 20px;
+            text-align: center;
+            border-top: 2px solid #00ff00;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .build-button {
+            background-color: #00ff00;
+            color: #000000;
+            border: none;
+            padding: 10px 20px;
+            font-size: 24px;
+            text-transform: uppercase;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Tactical Burger Assembly</h1>
+    </header>
+    <div id="app">
+        <div id="ingredientSelection">
+            <h2>Select Components</h2>
+            <div v-for="category in categories" :key="category.name">
+                <h3>{{ category.name }}</h3>
+                <div v-for="ingredient in category.options" :key="ingredient.id" class="ingredient">
+                    <input type="radio" :name="category.name" :value="ingredient.id" v-model="category.selected">
+                    {{ ingredient.name }}
+                </div>
+            </div>
+        </div>
+        <div id="burgerDisplay">
+            <h2>Assembled Burger</h2>
+            <div class="burger-container">
+                <div class="burger-item" :class="[ingredient.position, ingredient.verticalPosition]"
+                     v-for="ingredient in selectedIngredients" :key="ingredient.id"
+                     v-html="ingredient.svg">
+                </div>
+            </div>
+        </div>
+        <div id="descriptionDisplay">
+            <h2>Component Details</h2>
+            <p v-for="ingredient in selectedIngredients" :key="ingredient.id">
+                {{ descriptions[ingredient.name] }}
+            </p>
+        </div>
+    </div>
+    <footer>
+        <div>
+            <div class="cost">Total Cost: ${{ totalCost.toFixed(2) }}</div>
+            <button class="build-button" @click="buildBurger">Build Burger</button>
+        </div>
+    </footer>
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                categories: [
+                    { name: 'Bunker Buns', selected: null, options: [
+                        { id: 1, name: 'Standard Issue', svg: '<svg><rect width="100%" height="100%" fill="#f5deb3"/></svg>', cost: 1.5, position: 'center', verticalPosition: 'bottom' },
+                        { id: 2, name: 'Tactical Whole Grain', svg: '<svg><rect width="100%" height="100%" fill="#d2b48c"/></svg>', cost: 2.0, position: 'center', verticalPosition: 'bottom' }
+                    ]},
+                    { name: 'Tomato Options', selected: null, options: [
+                        { id: 3, name: 'None', svg: '', cost: 0, position: 'left', verticalPosition: '' },
+                        { id: 4, name: 'Juicy Tomato', svg: '<svg><rect width="100%" height="100%" fill="#ff6347"/></svg>', cost: 0.75, position: 'left', verticalPosition: '' }
+                    ]},
+                    { name: 'Lettuce Options', selected: null, options: [
+                        { id: 5, name: 'None', svg: '', cost: 0, position: 'right', verticalPosition: '' },
+                        { id: 6, name: 'Crisp Lettuce', svg: '<svg><rect width="100%" height="100%" fill="#228b22"/></svg>', cost: 0.5, position: 'right', verticalPosition: '' }
+                    ]},
+                    { name: 'Protein Payload', selected: null, options: [
+                        { id: 7, name: 'Beef Patty', svg: '<svg><rect width="100%" height="100%" fill="#8b4513"/></svg>', cost: 3.0, position: 'center', verticalPosition: 'top' },
+                        { id: 8, name: 'Chicken Patty', svg: '<svg><rect width="100%" height="100%" fill="#f5deb3"/></svg>', cost: 2.5, position: 'center', verticalPosition: 'top' }
+                    ]}
+                ],
+                descriptions: {
+                    'Standard Issue': 'Soft and fluffy, perfect for any mission.',
+                    'Tactical Whole Grain': 'Nutrient-dense option for optimal performance.',
+                    'None': '',
+                    'Juicy Tomato': 'Bursting with flavor, enhances overall impact.',
+                    'Crisp Lettuce': 'Fresh and crisp, adds a tactical crunch.',
+                    'Beef Patty': 'High-protein payload for maximum energy.',
+                    'Chicken Patty': 'Lean and precise, a strategic alternative.'
+                }
+            },
+            computed: {
+                selectedIngredients() {
+                    return this.categories
+                        .filter(category => category.selected !== null)
+                        .map(category => category.options.find(option => option.id === category.selected));
+                },
+                totalCost() {
+                    return this.selectedIngredients.reduce((total, ingredient) => total + ingredient.cost, 0);
+                }
+            },
+            methods: {
+                buildBurger() {
+                    alert("Tactical burger assembly complete!");
+                }
+            }
+        });
+    </script>
+</body>
+</html>
