@@ -41,31 +41,25 @@
             border: 2px solid #00ff00;
             margin: 10px;
         }
+        #ingredientSelection {
+            display: flex;
+            flex-direction: column;
+        }
+        .options-container {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .column {
+            flex: 1;
+            padding: 0 10px;
+        }
         #burgerDisplay {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
         }
-        .burger-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-            width: 300px;
-            height: 300px;
-        }
-        .burger-item {
-            width: 100px;
-            height: 100px;
-            position: absolute;
-        }
-        .left { left: 0; }
-        .right { right: 0; }
-        .center { left: 50%; transform: translateX(-50%); }
-        .top { top: 0; }
-        .bottom { bottom: 0; }
-        .ingredient {
+        .ingredient, .restaurant {
             margin: 10px;
         }
         h2, h3 {
@@ -91,6 +85,13 @@
             cursor: pointer;
             margin-top: 20px;
         }
+        .restaurant-image {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 16 / 9;
+            object-fit: cover;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -99,23 +100,48 @@
     </header>
     <div id="app">
         <div id="ingredientSelection">
+            <h2>Select Luxury Level</h2>
+            <div v-for="level in luxuryLevels" :key="level.id" class="luxury-level">
+                <input type="radio" name="luxuryLevel" :value="level.id" v-model="selectedLuxuryLevel">
+                {{ level.name }}
+            </div>
             <h2>Select Components</h2>
-            <div v-for="category in categories" :key="category.name">
-                <h3>{{ category.name }}</h3>
-                <div v-for="ingredient in category.options" :key="ingredient.id" class="ingredient">
-                    <input type="radio" :name="category.name" :value="ingredient.id" v-model="category.selected">
-                    {{ ingredient.name }}
+            <div v-for="category in categories" :key="category" class="category">
+                <h3>{{ category }}</h3>
+                <div class="options-container">
+                    <div class="column" v-for="(column, index) in getOptionsColumns(category)" :key="index">
+                        <div v-for="option in column" :key="option.id" class="ingredient">
+                            <input type="radio" :name="category" :value="option.id" v-model="selections[category]">
+                            {{ option.name }}
+                        </div>
+                    </div>
                 </div>
+            </div>
+            <h2>Choose Restaurant</h2>
+            <div v-for="restaurant in restaurants" :key="restaurant.id" class="restaurant">
+                <input type="radio" name="restaurant" :value="restaurant.id" v-model="selectedRestaurant">
+                {{ restaurant.name }}
             </div>
         </div>
         <div id="burgerDisplay">
             <h2>Assembled Burger</h2>
-            <div class="burger-container">
-                <div class="burger-item" :class="[ingredient.position, ingredient.verticalPosition]"
-                     v-for="ingredient in selectedIngredients" :key="ingredient.id"
-                     v-html="ingredient.svg">
+            <div class="burger-container" style="display: flex; flex-direction: column; justify-content: space-between; align-items: center; width: 300px; height: 300px; position: relative;">
+                <div style="display: flex; justify-content: center; align-items: center; width: 100%; height: 25%;">
+                    <div v-for="ingredient in selectedIngredients" :key="ingredient.id" v-if="ingredient.verticalPosition === 'top'" style="width: 100%; height: 100%;" v-html="ingredient.svg"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; height: 50%;">
+                    <div style="width: 50%; height: 100%;">
+                        <div v-for="ingredient in selectedIngredients" :key="ingredient.id" v-if="ingredient.position === 'left'" style="width: 100%; height: 100%;" v-html="ingredient.svg"></div>
+                    </div>
+                    <div style="width: 50%; height: 100%;">
+                        <div v-for="ingredient in selectedIngredients" :key="ingredient.id" v-if="ingredient.position === 'right'" style="width: 100%; height: 100%;" v-html="ingredient.svg"></div>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: center; align-items: center; width: 100%; height: 25%;">
+                    <div v-for="ingredient in selectedIngredients" :key="ingredient.id" v-if="ingredient.verticalPosition === 'bottom'" style="width: 100%; height: 100%;" v-html="ingredient.svg"></div>
                 </div>
             </div>
+            <img v-if="selectedRestaurantImage" :src="selectedRestaurantImage" alt="Restaurant Image" class="restaurant-image">
         </div>
         <div id="descriptionDisplay">
             <h2>Component Details</h2>
@@ -134,50 +160,124 @@
         new Vue({
             el: '#app',
             data: {
-                categories: [
-                    { name: 'Bunker Buns', selected: null, options: [
-                        { id: 1, name: 'Standard Issue', svg: '<svg><rect width="100%" height="100%" fill="#f5deb3"/></svg>', cost: 1.5, position: 'center', verticalPosition: 'bottom' },
-                        { id: 2, name: 'Tactical Whole Grain', svg: '<svg><rect width="100%" height="100%" fill="#d2b48c"/></svg>', cost: 2.0, position: 'center', verticalPosition: 'bottom' }
-                    ]},
-                    { name: 'Tomato Options', selected: null, options: [
-                        { id: 3, name: 'None', svg: '', cost: 0, position: 'left', verticalPosition: '' },
-                        { id: 4, name: 'Juicy Tomato', svg: '<svg><rect width="100%" height="100%" fill="#ff6347"/></svg>', cost: 0.75, position: 'left', verticalPosition: '' }
-                    ]},
-                    { name: 'Lettuce Options', selected: null, options: [
-                        { id: 5, name: 'None', svg: '', cost: 0, position: 'right', verticalPosition: '' },
-                        { id: 6, name: 'Crisp Lettuce', svg: '<svg><rect width="100%" height="100%" fill="#228b22"/></svg>', cost: 0.5, position: 'right', verticalPosition: '' }
-                    ]},
-                    { name: 'Protein Payload', selected: null, options: [
-                        { id: 7, name: 'Beef Patty', svg: '<svg><rect width="100%" height="100%" fill="#8b4513"/></svg>', cost: 3.0, position: 'center', verticalPosition: 'top' },
-                        { id: 8, name: 'Chicken Patty', svg: '<svg><rect width="100%" height="100%" fill="#f5deb3"/></svg>', cost: 2.5, position: 'center', verticalPosition: 'top' }
-                    ]}
+                luxuryLevels: [
+                    { id: 1, name: 'Basic' },
+                    { id: 2, name: 'Standard' },
+                    { id: 3, name: 'Luxury' }
                 ],
+                selectedLuxuryLevel: 1,
+                categories: ['Bunker Buns', 'Tomato Options', 'Lettuce Options', 'Protein Payload'],            
+                optionsByLuxuryLevel: {
+                    1: [
+                        { id: 1, category: 'Bunker Buns', name: 'Basic Bun 1', svg: '<svg width="100%" height="100%" viewBox="0 0 100 20"><rect width="100%" height="100%" fill="#f5deb3"/></svg>', cost: 0.5, position: 'center', verticalPosition: 'bottom' },
+                        { id: 2, category: 'Bunker Buns', name: 'Basic Bun 2', svg: '<svg width="100%" height="100%" viewBox="0 0 100 20"><rect width="100%" height="100%" fill="#f5deb3"/></svg>', cost: 0.5, position: 'center', verticalPosition: 'bottom' },
+                        { id: 3, category: 'Bunker Buns', name: 'Basic Bun 3', svg: '<svg width="100%" height="100%" viewBox="0 0 100 20"><rect width="100%" height="100%" fill="#f5deb3"/></svg>', cost: 0.5, position: 'center', verticalPosition: 'bottom' },
+                        { id: 4, category: 'Bunker Buns', name: 'Basic Bun 4', svg: '<svg width="100%" height="100%" viewBox="0 0 100 20"><rect width="100%" height="100%" fill="#f5deb3"/></svg>', cost: 0.5, position: 'center', verticalPosition: 'bottom' },
+                        { id: 5, category: 'Tomato Options', name: 'Greenhouse Tomato', svg: '<svg width="100%" height="100%" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="#ff6347"/></svg>', cost: 0.5, position: 'left', verticalPosition: '' },
+                        { id: 6, category: 'Lettuce Options', name: 'Iceberg Lettuce', svg: '<svg width="100%" height="100%" viewBox="0 0 100 100"><path d="M20,50 Q50,5 80,50 Q50,95 20,50 Z" fill="#228b22"/></svg>', cost: 0.25, position: 'right', verticalPosition: '' },
+                        { id: 7, category: 'Protein Payload', name: 'Basic Patty 1', svg: '<svg width="100%" height="100%" viewBox="0 0 100 20"><rect width="100%" height="100%" fill="#8b4513"/></svg>', cost: 1.5, position: 'center', verticalPosition: 'top' },
+                        { id: 8, category: 'Protein Payload', name: 'Basic Patty 2', svg: '<svg width="100%" height="100%" viewBox="0 0 100 20"><rect width="100%" height="100%" fill="#8b4513"/></svg>', cost: 1.5, position: 'center', verticalPosition: 'top' },
+                        { id: 9, category: 'Protein Payload', name: 'Basic Patty 3', svg: '<svg width="100%" height="100%" viewBox="0 0 100 20"><rect width="100%" height="100%" fill="#8b4513"/></svg>', cost: 1.5, position: 'center', verticalPosition: 'top' },
+                        { id: 10, category: 'Protein Payload', name: 'Basic Patty 4', svg: '<svg width="100%" height="100%" viewBox="0 0 100 20"><rect width="100%" height="100%" fill="#8b4513"/></svg>', cost: 1.5, position: 'center', verticalPosition: 'top' }
+                    ],
+                    2: [
+                        { id: 11, category: 'Bunker Buns', name: 'Standard Bun 1', svg: '<svg width="100%" height="100%" viewBox="0 0 100 20"><rect width="100%" height="100%" fill="#d2b48c"/></svg>', cost: 0.75, position: 'center', verticalPosition: 'bottom' },
+                        { id: 12, category: 'Bunker Buns', name: 'Standard Bun 2', svg: '<svg width="100%" height="100%" viewBox="0 0 100 20"><rect width="100%" height="100%" fill="#d2b48c"/></svg>', cost: 0.75, position: 'center', verticalPosition: 'bottom' },
+                        { id: 13, category: 'Bunker Buns', name: 'Standard Bun 3', svg: '<svg width="100%" height="100%" viewBox="0 0 100 20"><rect width="100%" height="100%" fill="#d2b48c"/></svg>', cost: 0.75, position: 'center', verticalPosition: 'bottom' },
+                        { id: 14, category: 'Bunker Buns', name: 'Standard Bun 4', svg: '<svg width="100%" height="100%" viewBox="0 0 100 20"><rect width="100%" height="100%" fill="#d2b48c"/></svg>', cost: 0.75, position: 'center', verticalPosition: 'bottom' },
+                        { id: 15, category: 'Tomato Options', name: 'Vine-Ripened Tomato', svg: '<svg width="100%" height="100%" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="#ff4500"/></svg>', cost: 0.75, position: 'left', verticalPosition: '' },
+                        { id: 16, category: 'Lettuce Options', name: 'Romaine Lettuce', svg: '<svg width="100%" height="100%" viewBox="0 0 100 100"><path d="M20,50 Q50,10 80,50 Q50,90 20,50 Z" fill="#006400"/></svg>', cost: 0.5, position: 'right', verticalPosition: '' },
+                        { id: 17, category: 'Protein Payload', name: 'Standard Patty 1', svg: '<svg width="100%" height="100%" viewBox="0 0 100 20"><rect width="100%" height="100%" fill="#a0522d"/></svg>', cost: 2, position: 'center', verticalPosition: 'top' },
+                        { id: 18, category: 'Protein Payload', name: 'Standard Patty 2', svg: '<svg width="100%" height="100%" viewBox="0 0 100 20"><rect width="100%" height="100%" fill="#a0522d"/></svg>', cost: 2, position: 'center', verticalPosition: 'top' },
+                        { id: 19, category: 'Protein Payload', name: 'Standard Patty 3', svg: '<svg width="100%" height="100%" viewBox="0 0 100 20"><rect width="100%" height="100%" fill="#a0522d"/></svg>', cost: 2, position: 'center', verticalPosition: 'top' },
+                        { id: 20, category: 'Protein Payload', name: 'Standard Patty 4', svg: '<svg width="100%" height="100%" viewBox="0 0 100 20"><rect width="100%" height="100%" fill="#a0522d"/></svg>', cost: 2, position: 'center', verticalPosition: 'top' }
+                    ],
+                    3: [
+                        { id: 21, category: 'Bunker Buns', name: 'Artisan Bun 1', svg: '<svg width="100%" height="100%" viewBox="0 0 100 20"><rect width="100%" height="100%" fill="#f0e68c"/></svg>', cost: 1.25, position: 'center', verticalPosition: 'bottom' },
+                        { id: 22, category: 'Bunker Buns', name: 'Artisan Bun 2', svg: '<svg width="100%" height="100%" viewBox="0 0 100 20"><rect width="100%" height="100%" fill="#f0e68c"/></svg>', cost: 1.25, position: 'center', verticalPosition: 'bottom' },
+                        { id: 23, category: 'Bunker Buns', name: 'Artisan Bun 3', svg: '<svg width="100%" height="100%" viewBox="0 0 100 20"><rect width="100%" height="100%" fill="#f0e68c"/></svg>', cost: 1.25, position: 'center', verticalPosition: 'bottom' },
+                        { id: 24, category: 'Bunker Buns', name: 'Artisan Bun 4', svg: '<svg width="100%" height="100%" viewBox="0 0 100 20"><rect width="100%" height="100%" fill="#f0e68c"/></svg>', cost: 1.25, position: 'center', verticalPosition: 'bottom' },
+                        { id: 25, category: 'Tomato Options', name: 'Heirloom Tomato', svg: '<svg width="100%" height="100%" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="#ff6961"/></svg>', cost: 1.25, position: 'left', verticalPosition: '' },
+                        { id: 26, category: 'Lettuce Options', name: 'Arugula', svg: '<svg width="100%" height="100%" viewBox="0 0 100 100"><path d="M20,50 Q50,15 80,50 Q50,85 20,50 Z" fill="#2e8b57"/></svg>', cost: 0.75, position: 'right', verticalPosition: '' },
+                        { id: 27, category: 'Protein Payload', name: 'Wagyu Patty 1', svg: '<svg width="100%" height="100%" viewBox="0 0 100 20"><rect width="100%" height="100%" fill="#b22222"/></svg>', cost: 3.5, position: 'center', verticalPosition: 'top' },
+                        { id: 28, category: 'Protein Payload', name: 'Wagyu Patty 2', svg: '<svg width="100%" height="100%" viewBox="0 0 100 20"><rect width="100%" height="100%" fill="#b22222"/></svg>', cost: 3.5, position: 'center', verticalPosition: 'top' },
+                        { id: 29, category: 'Protein Payload', name: 'Wagyu Patty 3', svg: '<svg width="100%" height="100%" viewBox="0 0 100 20"><rect width="100%" height="100%" fill="#b22222"/></svg>', cost: 3.5, position: 'center', verticalPosition: 'top' },
+                        { id: 30, category: 'Protein Payload', name: 'Wagyu Patty 4', svg: '<svg width="100%" height="100%" viewBox="0 0 100 20"><rect width="100%" height="100%" fill="#b22222"/></svg>', cost: 3.5, position: 'center', verticalPosition: 'top' }
+                    ]
+                },
+                selections: {
+                    'Bunker Buns': null,
+                    'Tomato Options': null,
+                    'Lettuce Options': null,
+                    'Protein Payload': null
+                },
+                restaurants: [
+                    { id: 1, name: 'Tactical Diner', image: 'https://example.com/tactical-diner.jpg' },
+                    { id: 2, name: 'Bunker Burger Joint', image: 'https://example.com/bunker-burger-joint.jpg' },
+                    { id: 3, name: 'Grenade Grill', image: 'https://example.com/grenade-grill.jpg' },
+                    { id: 4, name: 'Ammunition Alley', image: 'https://example.com/ammunition-alley.jpg' }
+                ],
+                selectedRestaurant: 1,
                 descriptions: {
-                    'Standard Issue': 'Soft and fluffy, perfect for any mission.',
-                    'Tactical Whole Grain': 'Nutrient-dense option for optimal performance.',
-                    'None': '',
-                    'Juicy Tomato': 'Bursting with flavor, enhances overall impact.',
-                    'Crisp Lettuce': 'Fresh and crisp, adds a tactical crunch.',
-                    'Beef Patty': 'High-protein payload for maximum energy.',
-                    'Chicken Patty': 'Lean and precise, a strategic alternative.'
+                    'Basic Bun 1': 'A simple and classic bun.',
+                    'Basic Bun 2': 'A reliable bun for your burger.',
+                    'Basic Bun 3': 'A traditional bun with a soft texture.',
+                    'Basic Bun 4': 'A standard bun for a satisfying burger.',
+                    'Standard Bun 1': 'A versatile bun with a balanced flavor.',
+                    'Standard Bun 2': 'A dependable bun for any occasion.',
+                    'Standard Bun 3': 'A crowd-pleasing bun with a subtle sweetness.',
+                    'Standard Bun 4': 'A go-to bun for a delightful burger experience.',
+                    'Artisan Bun 1': 'A premium bun crafted with precision.',
+                    'Artisan Bun 2': 'An artisanal bun with a unique flavor profile.',
+                    'Artisan Bun 3': 'A gourmet bun made with high-quality ingredients.',
+                    'Artisan Bun 4': 'An exquisite bun for the ultimate burger indulgence.',
+                    'Greenhouse Tomato': 'A standard tomato grown in a controlled environment.',
+                    'Vine-Ripened Tomato': 'A flavorful tomato ripened on the vine for optimal taste.',
+                    'Heirloom Tomato': 'A specialty tomato with rich flavor and vibrant color.',
+                    'Iceberg Lettuce': 'Crisp and refreshing lettuce with a mild flavor.',
+                    'Romaine Lettuce': 'A sturdy lettuce with a slight bitterness and satisfying crunch.',
+                    'Arugula': 'A peppery and slightly bitter green that adds a unique twist.',
+                    'Basic Patty 1': 'A simple and juicy patty made with quality meat.',
+                    'Basic Patty 2': 'A flavorful patty seasoned with classic spices.',
+                    'Basic Patty 3': 'A tender patty that melts in your mouth.',
+                    'Basic Patty 4': 'A satisfying patty that forms the foundation of your burger.',
+                    'Standard Patty 1': 'A well-seasoned patty made with premium ingredients.',
+                    'Standard Patty 2': 'A succulent patty that elevates your burger experience.',
+                    'Standard Patty 3': 'A juicy patty with a perfect balance of flavors.',
+                    'Standard Patty 4': 'A mouthwatering patty that satisfies your burger cravings.',
+                    'Wagyu Patty 1': 'A luxurious patty made from highly marbled Wagyu beef.',
+                    'Wagyu Patty 2': 'An indulgent patty with unparalleled flavor and tenderness.',
+                    'Wagyu Patty 3': 'A premium patty that melts in your mouth with every bite.',
+                    'Wagyu Patty 4': 'An exceptional patty that redefines burger luxury.'
                 }
             },
             computed: {
                 selectedIngredients() {
-                    return this.categories
-                        .filter(category => category.selected !== null)
-                        .map(category => category.options.find(option => option.id === category.selected));
+                    return Object.entries(this.selections)
+                    .map(([category, id]) => this.optionsByLuxuryLevel[this.selectedLuxuryLevel].find(option => option.category === category && option.id === id))
+                    .filter(ingredient => ingredient !== undefined);
                 },
                 totalCost() {
-                    return this.selectedIngredients.reduce((total, ingredient) => total + ingredient.cost, 0);
+                return this.selectedIngredients.reduce((total, ingredient) => total + ingredient.cost, 0);
+                },
+                selectedRestaurantImage() {
+                    const restaurant = this.restaurants.find(restaurant => restaurant.id === this.selectedRestaurant);
+                    return restaurant ? restaurant.image : '';
                 }
             },
             methods: {
-                buildBurger() {
-                    alert("Tactical burger assembly complete!");
-                }
+                getOptionsColumns(category) {
+                    const options = this.optionsByLuxuryLevel[this.selectedLuxuryLevel].filter(option => option.category === category);
+                    const mid = Math.ceil(options.length / 2);
+                return [
+                    options.slice(0, mid),
+                    options.slice(mid)
+                ];
+            },
+            buildBurger() {
+                alert("Tactical burger assembly complete!");
             }
-        });
+        }
+    });
     </script>
-</body>
-</html>
+</body> </html>
